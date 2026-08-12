@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Literal
+from .intents import Intent
 
 
 class IntentEntities(BaseModel):
@@ -9,8 +10,5 @@ class IntentEntities(BaseModel):
 
 
 class IntentPrediction(BaseModel):
-    intent: Literal[
-        "greeting", "standard_query", "historical_query",
-        "comparison", "out_of_scope", "fallback",
-    ]
+    intent: Intent
     entities: IntentEntities = IntentEntities()

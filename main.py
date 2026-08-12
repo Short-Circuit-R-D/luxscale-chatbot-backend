@@ -1,9 +1,11 @@
 from app import register_blueprints
 from flask import Flask
+from flask_cors import CORS
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object("app.config.Config")
     register_blueprints(app)
     return app

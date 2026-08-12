@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 from app.nlu.schemas import IntentPrediction
+from app.services.rag_service import RagService
+from app.services.retrieval_service import RetrievalService
 
 
 @dataclass
@@ -13,7 +15,7 @@ class OrchestratorResult:
 
 class IntentContext:
     def __init__(self, session_id: str, query: str, prediction: IntentPrediction,
-                 retrieval, rag, cache, history_messages):
+                 retrieval: RetrievalService, rag: RagService, cache, history_messages):
         self.session_id = session_id
         self.query = query
         self.prediction = prediction
