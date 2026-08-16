@@ -15,6 +15,10 @@ class EmbeddingService:
             )
         return self._lc
 
+    def load(self) -> None:
+        """Eagerly load the model into memory (call at process startup)."""
+        self._load()
+
     @property
     def lc_embeddings(self) -> HuggingFaceEmbeddings:
         return self._load()

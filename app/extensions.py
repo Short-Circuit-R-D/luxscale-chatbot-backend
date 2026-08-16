@@ -21,6 +21,7 @@ mongo_db = mongo_client[Config.MONGO_DB]
 standards_repo = StandardsRepository(mongo_db)
 
 embedding_service = EmbeddingService(model_name=Config.EMBEDDING_MODEL, device=Config.EMBEDDING_DEVICE)
+embedding_service.load()  # warm model at process startup (not on first request)
 
 qdrant_repo = QdrantRepository(
     client=qdrant_client,
