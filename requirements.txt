@@ -16,6 +16,7 @@ flask-cors==6.0.5
 fsspec==2026.7.0
 groq==0.37.1
 grpcio==1.83.0
+gunicorn==26.0.0
 h11==0.16.0
 h2==4.4.1
 hf-xet==1.6.0
