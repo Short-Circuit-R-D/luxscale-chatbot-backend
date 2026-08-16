@@ -36,6 +36,7 @@ def create():
     client.create_payload_index(name, "metadata.version_year", PayloadSchemaType.KEYWORD)
     client.create_payload_index(name, "metadata.standard_code", PayloadSchemaType.KEYWORD)
     client.create_payload_index(name, "metadata.ref_number", PayloadSchemaType.KEYWORD)
+    client.create_payload_index(name, "metadata.category_table_number", PayloadSchemaType.KEYWORD)
     print(f"collection '{name}' created (size={SIZE}, cosine)")
 
 

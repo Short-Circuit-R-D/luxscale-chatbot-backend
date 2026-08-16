@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
+from app.nlu.intent_catalog import get_spec
+from app.nlu.intents import Intent
 from app.nlu.schemas import IntentPrediction
-from app.services.rag_service import RagService
+from app.services.rag_service import CustomChatPromptTemplate, RagService
 from app.services.retrieval_service import RetrievalService
 
 
@@ -29,3 +31,27 @@ class BaseHandler(ABC):
     @abstractmethod
     def handle(self, ctx: IntentContext) -> OrchestratorResult:
         raise NotImplementedError
+
+
+def catalog_answer(
+    ctx: IntentContext,
+    intent: Intent,
+    *,
+    citation: str | None = None,
+) -> OrchestratorResult:
+    """Answer using catalog boundaries + intent_prompt.
+
+    Pass citation=... for RAG intents (use empty string if retrieval empty).
+    Pass citation=None for LLM intents.
+    """
+    spec = get_spec(intent)
+    text = ctx.rag.answer(
+        CustomChatPromptTemplate(
+            question=ctx.query,
+            citation=citation,
+            history=ctx.history_messages,
+            intent_prompt=spec.intent_prompt,
+            boundaries=spec.boundaries,
+        )
+    )
+    return OrchestratorResult(text=text, intent=intent.value)

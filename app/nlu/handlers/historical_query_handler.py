@@ -1,6 +1,5 @@
-from app.nlu.handlers.base import BaseHandler, IntentContext
-from app.nlu.handlers.base import OrchestratorResult
-from app.services.rag_service import CustomChatPromptTemplate
+from app.nlu.handlers.base import BaseHandler, IntentContext, OrchestratorResult, catalog_answer
+from app.nlu.intents import Intent
 
 
 class HistoricalQueryHandler(BaseHandler):
@@ -11,14 +10,7 @@ class HistoricalQueryHandler(BaseHandler):
             version_year=entities.version_year,
             standard_code=entities.standard_code,
             ref_number=entities.ref_number,
+            category_table_number=entities.category_table_number,
         )
         citations = ctx.retrieval.build_citations(clauses)
-        text = ctx.rag.answer(
-            CustomChatPromptTemplate(
-                question=ctx.query,
-                citation=citations,
-                history=ctx.history_messages,
-                intent_prompt=None
-            )
-        )
-        return OrchestratorResult(text=text, intent="historical_query")
+        return catalog_answer(ctx, Intent.HISTORICAL_QUERY, citation=citations)

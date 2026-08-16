@@ -2,6 +2,6 @@ from app.nlu.handlers.base import BaseHandler, IntentContext, OrchestratorResult
 from app.nlu.intents import Intent
 
 
-class GeneralHandler(BaseHandler):
+class LightingGuidanceHandler(BaseHandler):
     def handle(self, ctx: IntentContext) -> OrchestratorResult:
-        return catalog_answer(ctx, Intent.GENERAL, citation=None)
+        return catalog_answer(ctx, Intent.LIGHTING_GUIDANCE, citation=None)

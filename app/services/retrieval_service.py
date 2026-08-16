@@ -29,11 +29,24 @@ class RetrievalService:
         self.standards_repo = standards_repo
         self.top_k = top_k
 
-    def search(self, query: str, version_year: str | None = None,
-               standard_code: str | None = None, ref_number: str | None = None,
-               top_k: int | None = None) -> list[RetrievedClause]:
+    def search(
+        self,
+        query: str,
+        version_year: str | None = None,
+        standard_code: str | None = None,
+        ref_number: str | None = None,
+        category_table_number: str | None = None,
+        top_k: int | None = None,
+        force_latest: bool = True,
+    ) -> list[RetrievedClause]:
         embedding = self.embedder.embed(query)
-        qfilter = self._build_filter(version_year, standard_code, ref_number)
+        qfilter = self._build_filter(
+            version_year,
+            standard_code,
+            ref_number,
+            category_table_number,
+            force_latest,
+        )
         hits = self.qdrant_repo.search(embedding, qfilter, top_k or self.top_k)
 
         mongo_ids = [h[0].metadata.get("mongo_id") for h in hits]
@@ -55,18 +68,55 @@ class RetrievalService:
     def build_citations(self, clauses: list[RetrievedClause]) -> str:
         return "\n\n".join(c.citation() for c in clauses)
 
-    def _build_filter(self, version_year, standard_code, ref_number) -> Filter:
+    def _build_filter(
+        self,
+        version_year,
+        standard_code,
+        ref_number,
+        category_table_number,
+        force_latest: bool = True,
+    ) -> Filter:
         # payload is nested under the "metadata" key (langchain-qdrant 1.x
         # convention) -> filter conditions use dotted paths.
         def fields(key: str) -> str:
             return f"metadata.{key}"
 
+        must: list[FieldCondition] = []
         if version_year is not None:
-            conditions = [FieldCondition(key=fields("version_year"), match=MatchValue(value=version_year))]
-        else:
-            conditions = [FieldCondition(key=fields("is_latest"), match=MatchValue(value=True))]
+            must.append(
+                FieldCondition(key=fields("version_year"), match=MatchValue(value=version_year))
+            )
+        elif force_latest:
+            must.append(
+                FieldCondition(key=fields("is_latest"), match=MatchValue(value=True))
+            )
         if standard_code:
-            conditions.append(FieldCondition(key=fields("standard_code"), match=MatchValue(value=standard_code)))
-        if ref_number:
-            conditions.append(FieldCondition(key=fields("ref_number"), match=MatchValue(value=ref_number)))
-        return Filter(must=conditions)
+            must.append(
+                FieldCondition(key=fields("standard_code"), match=MatchValue(value=standard_code))
+            )
+
+        # Table numbers live in category_table_number (e.g. "6.2"); clause ids
+        # in ref_number (e.g. "6.2.1"). Match either field so "table 6.2" works
+        # even if the classifier put it in ref_number.
+        locators = {
+            v.strip()
+            for v in (ref_number, category_table_number)
+            if v and str(v).strip()
+        }
+        should: list[FieldCondition] = []
+        for value in locators:
+            should.append(
+                FieldCondition(key=fields("ref_number"), match=MatchValue(value=value))
+            )
+            should.append(
+                FieldCondition(
+                    key=fields("category_table_number"),
+                    match=MatchValue(value=value),
+                )
+            )
+
+        if should:
+            # Nested should inside must => at least one locator field must match
+            must.append(Filter(should=should))
+
+        return Filter(must=must) if must else Filter(must=[])

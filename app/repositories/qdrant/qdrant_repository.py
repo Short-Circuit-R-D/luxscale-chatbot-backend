@@ -40,6 +40,9 @@ class QdrantRepository:
         self.client.create_payload_index(self.collection_name, "metadata.version_year", PayloadSchemaType.KEYWORD)
         self.client.create_payload_index(self.collection_name, "metadata.standard_code", PayloadSchemaType.KEYWORD)
         self.client.create_payload_index(self.collection_name, "metadata.ref_number", PayloadSchemaType.KEYWORD)
+        self.client.create_payload_index(
+            self.collection_name, "metadata.category_table_number", PayloadSchemaType.KEYWORD
+        )
 
     def _store_instance(self) -> QdrantVectorStore:
         if self._store is None:

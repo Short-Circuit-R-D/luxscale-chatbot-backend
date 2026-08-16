@@ -17,8 +17,13 @@ class Orchestrator:
 
         prediction = self.predictor.predict(user_message)
         print(f"Predicted intent: {prediction.intent}, entities: {prediction.entities}")
-        handler = self.registry.get(prediction.intent, self.registry["fallback"])
-        print(f"Using handler: {handler.__class__.__name__} for intent: {prediction.intent}")
+        intent_key = (
+            prediction.intent.value
+            if hasattr(prediction.intent, "value")
+            else prediction.intent
+        )
+        handler = self.registry.get(intent_key, self.registry["fallback"])
+        print(f"Using handler: {handler.__class__.__name__} for intent: {intent_key}")
 
         history = session_cache_repo.get_history_messages(session_id)[:-1]
         ctx = IntentContext(

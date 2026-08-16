@@ -23,9 +23,11 @@ def ingest():
             validated = ClauseDocument.model_validate(raw_doc)
             result = ingestion_service.ingest_document(validated.model_dump())
             results.append(IngestResultItem(**result))
+            print(f"Successfully ingested document with mongo_id: {result.get('mongo_id')} and status: {result.get('status')}")
         except Exception as e:
             mongo_id = raw_doc.get("_id", "unknown") if isinstance(raw_doc, dict) else "unknown"
             results.append(IngestResultItem(mongo_id=mongo_id, status="failed", error=str(e)))
+            print(f"Failed to ingest document with mongo_id: {mongo_id}. Error: {str(e)}")
 
     return jsonify(IngestResponse(results=results).model_dump()), 200
 
