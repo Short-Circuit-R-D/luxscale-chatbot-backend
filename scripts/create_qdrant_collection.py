@@ -6,17 +6,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PayloadSchemaType, VectorParams
 
 from app.config import Config
+from app.utils.qdrant import create_qdrant_client
 
 SIZE = 1024  # bge-m3
 
 
 def create():
     force = "--force" in sys.argv
-    client = QdrantClient(url=Config.QDRANT_URL)
+    client = create_qdrant_client()
     name = Config.QDRANT_COLLECTION
 
     existing = {c.name for c in client.get_collections().collections}

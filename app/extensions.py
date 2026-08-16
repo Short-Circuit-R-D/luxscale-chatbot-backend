@@ -1,4 +1,3 @@
-from qdrant_client import QdrantClient
 from pymongo import MongoClient
 
 from app.config import Config
@@ -11,8 +10,10 @@ from app.services.embedding_service import EmbeddingService
 from app.services.ingestion_service import IngestionService
 from app.services.rag_service import RagService
 from app.services.retrieval_service import RetrievalService
+from app.utils.qdrant import create_qdrant_client
 
-qdrant_client = QdrantClient(url=Config.QDRANT_URL)
+qdrant_client = create_qdrant_client()
+
 
 mongo_client = MongoClient(Config.MONGO_URI)
 mongo_db = mongo_client[Config.MONGO_DB]

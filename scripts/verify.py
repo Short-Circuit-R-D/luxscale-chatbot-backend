@@ -73,13 +73,14 @@ def statuses(result: dict) -> dict[str, int]:
 def cleanup():
     import re
     from app.config import Config
-    from qdrant_client import QdrantClient
     from pymongo import MongoClient
+    from app.utils.qdrant import create_qdrant_client
 
     mongo = MongoClient(Config.MONGO_URI)[Config.MONGO_DB]
     mongo["standards_clauses"].delete_many({"_id": {"$regex": "^(verify_|raw_)"}})
 
-    client = QdrantClient(url=Config.QDRANT_URL)
+    client = create_qdrant_client()
+
     to_delete, offset = [], None
     while True:
         page, offset = client.scroll(Config.QDRANT_COLLECTION, limit=100, offset=offset, with_payload=True)

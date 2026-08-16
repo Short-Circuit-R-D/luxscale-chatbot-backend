@@ -13,6 +13,7 @@ class Config:
     EMBEDDING_DEVICE = os.getenv("EMBEDDING_DEVICE", "") or None
 
     QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+    QDRANT_URL_LOCALHOST = os.getenv("QDRANT_URL_LOCALHOST", "http://localhost:6333")
     QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "standards")
 
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
