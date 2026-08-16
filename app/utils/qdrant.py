@@ -13,8 +13,10 @@ def create_qdrant_client() -> QdrantClient:
     errors: list[str] = []
     for url in candidates:
         try:
-            client = QdrantClient(url=url, check_compatibility=False)
+            print(f"Trying to connect to Qdrant at {url}...")
+            client = QdrantClient(url=url, check_compatibility=False, prefer_grpc=False, timeout=60)
             client.get_collections()
+            print(f"Connected to Qdrant at {url}")
             return client
         except Exception as exc:
             errors.append(f"{url}: {exc}")
