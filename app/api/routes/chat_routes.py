@@ -1,6 +1,11 @@
 from flask import Blueprint, request, jsonify
 
-from app.api.schemas.chat_schema import ChatMessageRequest, ChatMessageResponse, SimulatorAttachment
+from app.api.schemas.chat_schema import (
+    ChatHistoryResponse,
+    ChatMessageRequest,
+    ChatMessageResponse,
+    SimulatorAttachment,
+)
 from app.extensions import orchestrator
 from app.repositories.cache.session_cache_repository import session_cache_repo
 
@@ -32,4 +37,6 @@ def get_session(session_id: str):
         return jsonify({"error": "session not found"}), 404
 
     history = session_cache_repo.get_history(session_id)
-    return jsonify({"session_id": session_id, "messages": history}), 200
+    return jsonify(ChatHistoryResponse(
+        session_id=session_id, messages=history,
+    ).model_dump()), 200

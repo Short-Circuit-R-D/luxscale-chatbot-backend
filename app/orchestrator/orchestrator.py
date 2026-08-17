@@ -47,5 +47,11 @@ class Orchestrator:
         )
         result = handler.handle(ctx)
 
-        session_cache_repo.append_turn(session_id, "assistant", result.text)
+        session_cache_repo.append_turn(
+            session_id,
+            "assistant",
+            result.text,
+            intent=result.intent,
+            simulator=result.simulator,
+        )
         return result

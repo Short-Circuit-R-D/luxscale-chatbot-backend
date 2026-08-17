@@ -24,6 +24,8 @@ class ChatTurn(BaseModel):
     role: str
     content: str
     timestamp: str
+    intent: Optional[str] = None
+    simulator: Optional[SimulatorAttachment] = None
 
 
 class ChatHistoryResponse(BaseModel):

@@ -31,7 +31,15 @@ class InMemorySessionCacheRepository:
                 return []
             return list(self._store[session_id]["messages"])
 
-    def append_turn(self, session_id: str, role: str, content: str):
+    def append_turn(
+        self,
+        session_id: str,
+        role: str,
+        content: str,
+        *,
+        intent: str | None = None,
+        simulator: dict | None = None,
+    ):
         with self._lock:
             if session_id not in self._store or not self._key_valid(session_id):
                 self._store[session_id] = {"messages": [], "expires_at": None}
@@ -39,6 +47,8 @@ class InMemorySessionCacheRepository:
                 "role": role,
                 "content": content,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
+                "intent": intent,
+                "simulator": simulator,
             })
             self._store[session_id]["expires_at"] = datetime.now(timezone.utc) + SESSION_TTL
 
