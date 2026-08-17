@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 
-from app.api.schemas.chat_schema import ChatMessageRequest, ChatMessageResponse
+from app.api.schemas.chat_schema import ChatMessageRequest, ChatMessageResponse, SimulatorAttachment
 from app.extensions import orchestrator
 from app.repositories.cache.session_cache_repository import session_cache_repo
 
@@ -17,7 +17,12 @@ def send_message():
     result = orchestrator.run(session_id=session_id, user_message=body.message)
 
     return jsonify(ChatMessageResponse(
-        session_id=session_id, response=result.text, intent=result.intent,
+        session_id=session_id,
+        response=result.text,
+        intent=result.intent,
+        simulator=SimulatorAttachment.model_validate(result.simulator)
+        if result.simulator
+        else None,
     ).model_dump()), 200
 
 

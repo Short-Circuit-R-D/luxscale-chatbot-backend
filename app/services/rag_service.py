@@ -61,7 +61,14 @@ class RagService:
         messages.append(("human", "{question}"))
 
         chain = ChatPromptTemplate.from_messages(messages) | self.chat | self._parser
-        return chain.invoke({
-            "question": template.question,
-            "history": template.history or [],
-        })
+        try:
+            return chain.invoke({
+                "question": template.question,
+                "history": template.history or [],
+            })
+        except Exception as e:
+            print("Error generating answer:", e)
+            return (
+                "I could not generate a full reply just now. Please try again, "
+                "or rephrase the question."
+            )

@@ -10,6 +10,7 @@ class IntentEntities(BaseModel):
     version_year: Optional[str] = None
     ref_number: Optional[str] = None
     category_table_number: Optional[str] = None
+    simulator_id: Optional[str] = None
 
 
 class IntentPrediction(BaseModel):

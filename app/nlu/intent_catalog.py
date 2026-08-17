@@ -147,7 +147,9 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
             "answered without citing a specific standard clause (e.g. what is "
             "UGR, what is maintained illuminance). Do NOT use for comparing "
             "requirements between spaces, activities, categories, tasks, "
-            "editions, or standards — those are comparison."
+            "editions, or standards — those are comparison. Do NOT use when "
+            "the user asks to open, show, use, or run a simulator or "
+            "interactive visualization — that is get_simulator."
         ),
         boundaries=(
             "No retrieval and no fake citations. Explain concepts from general "
@@ -160,7 +162,9 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
         intent_prompt=(
             "Explain the lighting concept clearly and accurately. If the "
             "question really needs EN 12464-1 numeric limits, say so and ask "
-            "them to name the space or edition for a standards lookup."
+            "them to name the space or edition for a standards lookup. A "
+            "matching interactive demo may be shown alongside this answer; "
+            "do not invent links or iframe URLs."
         ),
     ),
     Intent.LIGHTING_GUIDANCE: IntentSpec(
@@ -169,7 +173,8 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
         classifier_hint=(
             "User wants practical lighting design advice or how-to guidance "
             "(qualitative), not a direct clause citation (e.g. tips for office "
-            "lighting comfort)."
+            "lighting comfort). Do NOT use when the user asks to open, show, "
+            "use, or run a simulator — that is get_simulator."
         ),
         boundaries=(
             "No retrieval. Qualitative guidance only. Never invent regulatory "
@@ -181,7 +186,9 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
         intent_prompt=(
             "Give practical, qualitative lighting guidance. State clearly that "
             "this is general advice, not a substitute for the standard. Offer "
-            "to look up EN 12464-1 requirements if they name a space or edition."
+            "to look up EN 12464-1 requirements if they name a space or edition. "
+            "A matching interactive demo may be shown alongside this answer; "
+            "do not invent links or iframe URLs."
         ),
     ),
     Intent.CLARIFY: IntentSpec(
@@ -209,7 +216,9 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
         classifier_hint=(
             "Not about EN 12464-1 indoor workplace lighting levels — other "
             "standards (ISO, EN 12464-2, etc.), calculations, luminaire "
-            "counts, CAD/DWG/IES, or non-lighting topics."
+            "counts, CAD/DWG, or non-lighting topics. Interactive lighting "
+            "simulators in the catalog (IES photometry viewer, school lighting "
+            "demo, etc.) are in scope as get_simulator — do not decline those."
         ),
         boundaries=(
             "Politely decline. Do not attempt the out-of-scope task. Briefly "
@@ -240,6 +249,29 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
             "might mean."
         ),
     ),
+    Intent.GET_SIMULATOR: IntentSpec(
+        intent=Intent.GET_SIMULATOR,
+        category=IntentCategory.API,
+        classifier_hint=(
+            "User wants to open, show, use, or run an interactive lighting "
+            "simulator or visualization (IES file analyzer, polar curves, "
+            "school lighting, CCT/CRI/flicker classroom demo, etc.). "
+            "Prefer this over general when they want the tool itself, not a "
+            "definition. Extract simulator_id when the catalog id is obvious "
+            "(e.g. ies, school_lighting)."
+        ),
+        boundaries=(
+            "Do not invent iframe URLs or query strings. The system attaches "
+            "the matching simulator. Introduce the tool briefly. No fake "
+            "citations. No CAD or luminaire-count calculations. Respond in "
+            "markdown."
+        ),
+        intent_prompt=(
+            "Introduce the interactive simulator briefly. Do not invent or "
+            "paste iframe URLs or query strings. If the user mentioned values, "
+            "you may refer to them in words. Keep it short."
+        ),
+    ),
 }
 
 
@@ -252,12 +284,15 @@ def get_spec(intent: Intent | str) -> IntentSpec:
 def classifier_prompt() -> str:
     rag_lines = []
     llm_lines = []
+    api_lines = []
     for spec in INTENT_CATALOG.values():
         line = f"- {spec.intent.value}: {spec.classifier_hint}"
         if spec.category == IntentCategory.RAG:
             rag_lines.append(line)
         elif spec.category == IntentCategory.LLM:
             llm_lines.append(line)
+        elif spec.category == IntentCategory.API:
+            api_lines.append(line)
 
     return (
         "Classify the user message for a lighting-standards assistant "
@@ -266,11 +301,14 @@ def classifier_prompt() -> str:
         "- RAG intents require searching standard clauses before answering.\n"
         "- LLM intents answer from bounded knowledge or conversation only "
         "(no clause search).\n"
-        "- API intents are not available yet — never classify into API.\n\n"
+        "- API intents resolve a catalog tool (simulator) and return a "
+        "structured payload; they do not search clauses.\n\n"
         "RAG intents:\n"
         + "\n".join(rag_lines)
         + "\n\nLLM intents:\n"
         + "\n".join(llm_lines)
+        + "\n\nAPI intents:\n"
+        + "\n".join(api_lines)
         + "\n\nEntity extraction:\n"
         "- version_year: four-digit year only when explicitly mentioned "
         "(e.g. 2019).\n"
@@ -278,6 +316,8 @@ def classifier_prompt() -> str:
         "- ref_number: clause/activity id like '6.2.1' when named.\n"
         "- category_table_number: table/category id like '6.2' or '5.28' "
         "when the user names a table or category (not a deep clause).\n"
+        "- simulator_id: catalog id such as 'ies' or 'school_lighting' when "
+        "the user clearly names that tool. Use null if unsure.\n"
         "Use null for any entity not present.\n\n"
         "Accept any language in the user message, but always return intent "
         "and entities in English."

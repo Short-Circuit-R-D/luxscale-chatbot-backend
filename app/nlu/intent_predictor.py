@@ -11,7 +11,9 @@ YEAR_PATTERN = re.compile(r"^(19\d{2}|20\d{2})$")
 
 class IntentPredictor:
     def __init__(self, chat: ChatGroq):
-        self._llm = chat.with_structured_output(IntentPrediction)
+        self._llm = chat.with_structured_output(
+            IntentPrediction, method="json_mode"
+        )
         self._prompt = classifier_prompt()
 
     def predict(self, message: str) -> IntentPrediction:

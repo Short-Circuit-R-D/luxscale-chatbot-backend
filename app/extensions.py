@@ -1,3 +1,4 @@
+from langchain_groq import ChatGroq
 from pymongo import MongoClient
 
 from app.config import Config
@@ -10,7 +11,16 @@ from app.services.embedding_service import EmbeddingService
 from app.services.ingestion_service import IngestionService
 from app.services.rag_service import RagService
 from app.services.retrieval_service import RetrievalService
+from app.services.simulator_service import SimulatorService
 from app.utils.qdrant import create_qdrant_client
+
+
+def _chat() -> ChatGroq:
+    return ChatGroq(
+        model=Config.LLM_MODEL,
+        api_key=Config.GROQ_API_KEY,
+        temperature=0.2,
+    )
 
 qdrant_client = create_qdrant_client()
 
@@ -43,12 +53,13 @@ retrieval_service = RetrievalService(
 )
 
 rag_service = RagService(model=Config.LLM_MODEL, api_key=Config.GROQ_API_KEY)
-
-predictor = IntentPredictor(chat=rag_service.chat)
+simulator_service = SimulatorService(chat=_chat())
+predictor = IntentPredictor(chat=_chat())
 registry = build_registry()
 orchestrator = Orchestrator(
     predictor=predictor,
     registry=registry,
     retrieval=retrieval_service,
     rag=rag_service,
+    simulator=simulator_service,
 )

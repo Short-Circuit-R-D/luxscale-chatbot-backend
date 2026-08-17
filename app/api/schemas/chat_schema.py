@@ -7,10 +7,17 @@ class ChatMessageRequest(BaseModel):
     message: str
 
 
+class SimulatorAttachment(BaseModel):
+    id: str
+    title: str
+    iframe_url: str
+
+
 class ChatMessageResponse(BaseModel):
     session_id: str
     response: str
     intent: str
+    simulator: Optional[SimulatorAttachment] = None
 
 
 class ChatTurn(BaseModel):

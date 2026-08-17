@@ -21,3 +21,6 @@ class Intent(str, Enum):
     CLARIFY = "clarify"
     OUT_OF_SCOPE = "out_of_scope"
     FALLBACK = "fallback"
+
+    # API — catalog/tools, no clause retrieval
+    GET_SIMULATOR = "get_simulator"

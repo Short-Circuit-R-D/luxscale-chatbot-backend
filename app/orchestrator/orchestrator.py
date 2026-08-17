@@ -3,14 +3,23 @@ from app.nlu.intent_predictor import IntentPredictor
 from app.repositories.cache.session_cache_repository import session_cache_repo
 from app.services.rag_service import RagService
 from app.services.retrieval_service import RetrievalService
+from app.services.simulator_service import SimulatorService
 
 
 class Orchestrator:
-    def __init__(self, predictor: IntentPredictor, registry: dict, retrieval: RetrievalService, rag: RagService):
+    def __init__(
+        self,
+        predictor: IntentPredictor,
+        registry: dict,
+        retrieval: RetrievalService,
+        rag: RagService,
+        simulator: SimulatorService,
+    ):
         self.predictor = predictor
         self.registry = registry
         self.retrieval = retrieval
         self.rag = rag
+        self.simulator = simulator
 
     def run(self, session_id: str, user_message: str) -> OrchestratorResult:
         session_cache_repo.append_turn(session_id, "user", user_message)
@@ -34,6 +43,7 @@ class Orchestrator:
             rag=self.rag,
             cache=session_cache_repo,
             history_messages=history,
+            simulator=self.simulator,
         )
         result = handler.handle(ctx)
 

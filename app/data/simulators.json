@@ -1,0 +1,131 @@
+{
+  "simulators": [
+    {
+      "id": "ies",
+      "title": "IES file analyzer",
+      "iframe_base_url": "https://mahmoudmnael.github.io/ies-files-analyzer/embed",
+      "aliases": [
+        "ies",
+        "ies file",
+        "ies files",
+        "ies analyzer",
+        "photometric file",
+        "polar curve",
+        "polar curves",
+        "cplane",
+        "c-planes",
+        "c planes"
+      ],
+      "concepts": [
+        "ies",
+        "ies file",
+        "photometric file",
+        "polar curve",
+        "c-plane",
+        "candela distribution"
+      ],
+      "params": []
+    },
+    {
+      "id": "school_lighting",
+      "title": "School lighting simulator",
+      "iframe_base_url": "https://shortcircuit.company/reactSChools/",
+      "aliases": [
+        "school lighting",
+        "school simulator",
+        "react schools",
+        "classroom lighting",
+        "kindergarten lighting",
+        "playground lighting",
+        "cct",
+        "correlated colour temperature",
+        "correlated color temperature",
+        "colour temperature",
+        "color temperature",
+        "cri",
+        "colour rendering index",
+        "color rendering index",
+        "glare",
+        "flicker"
+      ],
+      "concepts": [
+        "school lighting",
+        "classroom lighting",
+        "kindergarten lighting",
+        "playground lighting",
+        "cct",
+        "correlated colour temperature",
+        "correlated color temperature",
+        "colour temperature",
+        "color temperature",
+        "cri",
+        "colour rendering index",
+        "color rendering index",
+        "glare",
+        "flicker"
+      ],
+      "params": [
+        {
+          "key": "grade",
+          "type": "string",
+          "description": "Occupant age group. Allowed: kinder, primary, adults. Omit if not mentioned. Map kindergarten/preschool to kinder, elementary to primary, adult to adults.",
+          "enum": ["kinder", "primary", "adults"],
+          "enum_aliases": {
+            "kindergarten": "kinder",
+            "preschool": "kinder",
+            "elementary": "primary",
+            "adult": "adults"
+          }
+        },
+        {
+          "key": "environment",
+          "type": "string",
+          "description": "Room or space type. Allowed: playground, Painting, classroom, naping room, laboratory, music room. Omit if not mentioned. Map napping room/nap room to naping room, paint/painting to Painting, lab to laboratory, music to music room.",
+          "enum": [
+            "playground",
+            "Painting",
+            "classroom",
+            "naping room",
+            "laboratory",
+            "music room"
+          ],
+          "enum_aliases": {
+            "napping room": "naping room",
+            "nap room": "naping room",
+            "napping": "naping room",
+            "paint": "Painting",
+            "painting": "Painting",
+            "lab": "laboratory",
+            "music": "music room",
+            "class": "classroom",
+            "class room": "classroom"
+          }
+        },
+        {
+          "key": "cct",
+          "type": "number",
+          "positive": true,
+          "description": "Correlated colour temperature in kelvin (e.g. 12000). Positive number only."
+        },
+        {
+          "key": "cri",
+          "type": "number",
+          "positive": true,
+          "description": "Colour rendering index Ra/CRI (e.g. 90). Positive number only."
+        },
+        {
+          "key": "glare",
+          "type": "number",
+          "positive": true,
+          "description": "Glare value used by the school simulator (e.g. 10). Positive number only."
+        },
+        {
+          "key": "flicker",
+          "type": "number",
+          "positive": true,
+          "description": "Flicker value used by the school simulator (e.g. 1200). Positive number only."
+        }
+      ]
+    }
+  ]
+}
