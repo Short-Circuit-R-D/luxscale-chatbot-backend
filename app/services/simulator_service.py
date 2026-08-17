@@ -212,7 +212,8 @@ class SimulatorService:
             "Only use these keys:\n"
             f"{lines}\n"
             "Return them as `params` objects with `key` and `value`. "
-            "Omit keys that are not clearly present. Do not invent values.\n\n"
+            "Omit keys that are not clearly present. Do not invent values. "
+            "Respond in JSON.\n\n"
             f"User message: {query}"
         )
         try:

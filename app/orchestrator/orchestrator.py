@@ -24,7 +24,8 @@ class Orchestrator:
     def run(self, session_id: str, user_message: str) -> OrchestratorResult:
         session_cache_repo.append_turn(session_id, "user", user_message)
 
-        prediction = self.predictor.predict(user_message)
+        history = session_cache_repo.get_history_messages(session_id)[:-1]
+        prediction = self.predictor.predict(user_message, history=history)
         print(f"Predicted intent: {prediction.intent}, entities: {prediction.entities}")
         intent_key = (
             prediction.intent.value
@@ -34,7 +35,6 @@ class Orchestrator:
         handler = self.registry.get(intent_key, self.registry["fallback"])
         print(f"Using handler: {handler.__class__.__name__} for intent: {intent_key}")
 
-        history = session_cache_repo.get_history_messages(session_id)[:-1]
         ctx = IntentContext(
             session_id=session_id,
             query=user_message,

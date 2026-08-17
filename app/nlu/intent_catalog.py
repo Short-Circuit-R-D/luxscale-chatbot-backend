@@ -145,11 +145,15 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
         classifier_hint=(
             "User asks for lighting definitions or concepts that can be "
             "answered without citing a specific standard clause (e.g. what is "
-            "UGR, what is maintained illuminance). Do NOT use for comparing "
+            "UGR, what is CRI/Ra, what is maintained illuminance, explain "
+            "flicker in general). Use this when they say 'in general', 'not "
+            "according to a standard', 'what does X mean', or refuse "
+            "requirements/edition questions. Do NOT use for comparing "
             "requirements between spaces, activities, categories, tasks, "
             "editions, or standards — those are comparison. Do NOT use when "
             "the user asks to open, show, use, or run a simulator or "
-            "interactive visualization — that is get_simulator."
+            "interactive visualization — that is get_simulator. Never send "
+            "a concept question to clarify just because no year was given."
         ),
         boundaries=(
             "No retrieval and no fake citations. Explain concepts from general "
@@ -195,19 +199,29 @@ INTENT_CATALOG: dict[Intent, IntentSpec] = {
         intent=Intent.CLARIFY,
         category=IntentCategory.LLM,
         classifier_hint=(
-            "The question is about lighting/standards but is too ambiguous to "
-            "answer safely (missing year, space type, which edition, or which "
-            "ref). Prefer this over guessing."
+            "User wants numeric or normative EN 12464-1 requirements (lux, "
+            "UGR limits, a clause, a space type) but the question is unsafe "
+            "to retrieve: missing space type, edition/year when they asked "
+            "for a historical edition, or which ref. Do NOT use for concept "
+            "definitions (what is CRI/UGR, explain in general). Do NOT ask "
+            "for a year just because none was mentioned — current edition is "
+            "the default for requirements. Prefer general or standard_query "
+            "over this whenever the question can be answered without a missing "
+            "slot."
         ),
         boundaries=(
             "Do not answer as if sure. Do not invent values or citations. Ask "
-            "one focused clarifying question (year, space type, ref number, or "
-            "edition). Optionally give 2 short example phrasings. Respond in "
+            "one focused clarifying question only for the missing slot needed "
+            "for a requirements lookup (space type, ref, or a historical year "
+            "they asked for). Do not ask for an edition to define a lighting "
+            "term. Optionally give 2 short example phrasings. Respond in "
             "markdown."
         ),
         intent_prompt=(
-            "Ask one precise clarifying question so the user can be helped "
-            "with EN 12464-1. Do not provide a full standards answer yet."
+            "Ask one precise clarifying question only if a standards lookup "
+            "is missing a required slot (space, ref, or historical year). "
+            "If they want a definition or said they do not need requirements, "
+            "do not ask for an EN 12464-1 edition."
         ),
     ),
     Intent.OUT_OF_SCOPE: IntentSpec(
@@ -297,6 +311,11 @@ def classifier_prompt() -> str:
     return (
         "Classify the user message for a lighting-standards assistant "
         "focused on EN 12464-1 indoor workplace lighting.\n\n"
+        "Use recent conversation when the latest user message is a follow-up "
+        "(e.g. they refused an edition question and still want a definition).\n"
+        "Concept/definition questions are general even with no year or space. "
+        "clarify is only for incomplete requirements lookups, never for "
+        "'what is CRI' style questions.\n\n"
         "Categories:\n"
         "- RAG intents require searching standard clauses before answering.\n"
         "- LLM intents answer from bounded knowledge or conversation only "
@@ -320,5 +339,6 @@ def classifier_prompt() -> str:
         "the user clearly names that tool. Use null if unsure.\n"
         "Use null for any entity not present.\n\n"
         "Accept any language in the user message, but always return intent "
-        "and entities in English."
+        "and entities in English.\n"
+        "Respond in JSON."
     )
